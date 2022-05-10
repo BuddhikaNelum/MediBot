@@ -13,8 +13,8 @@ namespace MediBot.API.Services
 
         public DialogFlowWebService(IOptions<DialogFlowSettings> dialogFlowSettings)
         {
-            SetEnvironmentVariable();
             this.dialogFlowSettings = dialogFlowSettings;
+            SetEnvironmentVariable();
         }
 
         public async Task<QueryResult> DetectIntentAsync(string text)
@@ -62,7 +62,7 @@ namespace MediBot.API.Services
             try
             {
                 var json = "medibot-hdwg-75e4f896439a.json";
-                System.Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", "D:\\Education\\Degree\\Assignments\\AI\\Creds\\" + json);
+                System.Environment.SetEnvironmentVariable(dialogFlowSettings.Value.Key, dialogFlowSettings.Value.KeyPath + json);
             }
             catch (Exception)
             {

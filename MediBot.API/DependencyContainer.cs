@@ -9,7 +9,7 @@ namespace MediBot.API
         public static IServiceCollection InjectServices(this IServiceCollection services, IConfiguration configuration)
         {
             //AppSettings
-            services.Configure<DialogFlowSettings>(configuration.GetSection("DSettings"));
+            services.Configure<DialogFlowSettings>(configuration.GetSection("DialogFlow"));
 
             //Services
             services.AddScoped<IDialogFlowWebService, DialogFlowWebService>();

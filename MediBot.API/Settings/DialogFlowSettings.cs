@@ -2,7 +2,7 @@
 {
     public class DialogFlowSettings
     {
+        public string Key { get; set; }
         public string KeyPath { get; set; }
-        public string Test { get; set; }
     }
 }
