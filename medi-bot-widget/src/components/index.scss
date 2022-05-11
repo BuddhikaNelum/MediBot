@@ -1,0 +1,108 @@
+@import "../../../assets/scss/01_variables";
+
+.chat-participants {
+  .participant-list {
+    padding-left: 0.5rem;
+    margin-right: 0.5rem;
+    background-color: #13203a;
+    color: white;
+    height: calc(100vh - #{$top-nav});
+    min-width: 330px;
+  }
+  .participant-list-header {
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    font-size: 1.5rem;
+    .title-and-calendar-ic {
+      display: flex;
+      justify-content: space-between;
+    }
+    .date-picker-wrapper {
+      position: relative;
+      .k-daterangepicker {
+        position: absolute;
+      }
+      .k-floating-label-container {
+        display: none;
+      }
+    }
+    .date-range {
+      font-size: 0.8rem;
+      font-weight: 400;
+      color: #a0a0a0;
+      border-top: 1px solid;
+      border-bottom: 1px solid;
+      padding: 0.5rem;
+      margin-top: 1rem;
+    }
+  }
+  .participant {
+    padding: 1rem 1rem;
+    margin-right: 8px;
+    align-items: center;
+    border-radius: 0.25rem;
+    transition: background-color 0.3s;
+    &:hover {
+      background-color: $active-color;
+    }
+    .avatar {
+      margin-right: 1rem;
+      width: 36px;
+      height: 36px;
+      flex-basis: 36px;
+    }
+    .name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .unread-count {
+      margin-left: auto;
+    }
+  }
+  .participant-active {
+    background-color: $active-color;
+    color: white;
+  }
+}
+
+.conversation {
+  flex-grow: 1;
+  margin: 0;
+  max-width: initial;
+  padding: 0 1rem 1rem 1rem;
+  height: calc(100vh - 48px);
+
+  .k-message-box {
+    border-radius: 0.25rem;
+    border: none;
+    background-color: $background-color-02;
+  }
+}
+
+.emoji-picker-pop {
+  background: transparent;
+  .emoji-picker-container {
+    width: 355px;
+  }
+  .emoji-mart {
+    border: none;
+  }
+}
+
+.no-chat-selected {
+  color: $text-light-gray-1;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .chat-icon {
+    font-size: 3.5rem;
+    text-align: center;
+    display: block;
+  }
+  .message {
+    font-size: 1.3rem;
+    line-height: 1.75rem;
+    margin-top: 0.25rem;
+  }
+}
