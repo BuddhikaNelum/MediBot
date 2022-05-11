@@ -1,5 +1,7 @@
 ﻿using Google.Cloud.Dialogflow.V2;
+using MediBot.API.Constants;
 using MediBot.API.Interfaces;
+using MediBot.API.Models;
 using MediBot.API.Settings;
 using Microsoft.Extensions.Options;
 
@@ -17,7 +19,7 @@ namespace MediBot.API.Services
             SetEnvironmentVariable();
         }
 
-        public async Task<QueryResult> DetectIntentAsync(string text)
+        public async Task<IntentResult> DetectIntentAsync(string text)
         {
             try
             {
@@ -33,7 +35,7 @@ namespace MediBot.API.Services
                 };
 
                 DetectIntentResponse response = await sessionsClient.DetectIntentAsync(sessionName, query);
-                return response.QueryResult;
+                return GetIntentResult(response.QueryResult);
 
             }
             catch (Exception)
@@ -41,6 +43,19 @@ namespace MediBot.API.Services
 
                 throw;
             }
+        }
+
+        private IntentResult GetIntentResult(QueryResult queryResult)
+        {
+            var intent = queryResult.Intent.DisplayName;
+
+            return intent switch
+            {
+                IntentTypes.DefaultWelcomeIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
+                IntentTypes.CommonSymtoms => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
+                IntentTypes.DefaultFallbackIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
+                _ => null,
+            };
         }
 
         private async Task CreateSession()
