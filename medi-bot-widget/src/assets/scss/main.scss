@@ -1,0 +1,127 @@
+/** Start: overriding theme values */
+$primary: #7269ef;
+
+@import "~@progress/kendo-theme-default/dist/all.scss";
+/** End: overriding theme values */
+
+.chat-widget-layout {
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+}
+
+.chat-container,
+.chat-loading {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0px 0px 15px 5px #d7d7d7;
+  width: 380px;
+  height: 400px;
+  position: absolute;
+  transition: height 0.2s ease-out;
+  bottom: 75px;
+  right: 10px;
+  border-radius: 0.5rem;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  &.hidden {
+    display: none;
+    height: 0px;
+    width: 0px;
+  }
+  .k-chat {
+    margin: 0;
+    .k-message-list {
+      &::-webkit-scrollbar {
+        width: 7px;
+      }
+
+      &::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #888;
+      }
+
+      &::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    }
+  }
+}
+
+.chat-loading {
+  background-color: #f5f7fb;
+  align-items: center;
+  justify-content: center;
+  .img-speech-bubble {
+    width: 6rem;
+  }
+  .title {
+    font-size: 1.6rem;
+    color: gray;
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+  }
+  .message {
+    font-size: 1.1rem;
+    color: gray;
+    margin: 0;
+    width: 70%;
+    text-align: center;
+  }
+}
+
+.button-container {
+  cursor: pointer;
+  background-color: #7269ef;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .icon {
+    transition: transform 0.3s ease;
+    position: absolute;
+    width: 35px;
+    height: 35px;
+  }
+
+  .icon.hidden {
+    transform: scale(0);
+  }
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 10px 20px;
+  .k-avatar {
+    width: 48px;
+    height: 48px;
+    flex-basis: 48px;
+  }
+  .d-name {
+    font-weight: 600;
+    font-size: 0.8rem;
+  }
+}
+
+.emoji-picker-pop {
+  background: transparent;
+  .emoji-picker-container {
+    width: 247px;
+  }
+  .emoji-mart {
+    border: none;
+  }
+}
