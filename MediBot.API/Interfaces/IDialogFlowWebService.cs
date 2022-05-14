@@ -1,9 +1,9 @@
-﻿using Google.Cloud.Dialogflow.V2;
+﻿using MediBot.API.Models;
 
 namespace MediBot.API.Interfaces
 {
     public interface IDialogFlowWebService
     {
-        Task<QueryResult> DetectIntentAsync(string text);
+        Task<IntentResult> DetectIntentAsync(string text);
     }
 }
