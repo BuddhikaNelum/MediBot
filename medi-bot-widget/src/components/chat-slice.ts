@@ -1,8 +1,9 @@
+import { Message } from "@progress/kendo-react-conversational-ui";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "../store/store";
 
 interface IMessagesState {
-  thread: Array<any>;
+  thread: Array<Message>;
 }
 
 const initialState: IMessagesState = {
@@ -13,7 +14,7 @@ export const messagesSlice = createSlice({
   name: 'messages',
   initialState,
   reducers: {
-    addMessage: (state: IMessagesState, action: PayloadAction<any>) => {
+    addMessage: (state: IMessagesState, action: PayloadAction<Message>) => {
       state.thread.push(action.payload);
     }
   }
