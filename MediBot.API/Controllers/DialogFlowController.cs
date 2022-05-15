@@ -30,5 +30,12 @@ namespace MediBot.API.Controllers
             var response = await intentDataService.GetDoctors(doctorDto.APIType, doctorDto.IntentName);
             return Ok(response);
         }
+
+        [HttpPost("Specialities")]
+        public async Task<IActionResult> Specialities([FromBody] SpecialityDto specialityDto)
+        {
+            var response = await intentDataService.GetSpecialities(specialityDto.APIType, specialityDto.IntentName);
+            return Ok(response);
+        }
     }
 }

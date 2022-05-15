@@ -6,5 +6,6 @@
         public const string CommonSymtoms = "CommonSymtoms";
         public const string DefaultFallbackIntent = "Default Fallback Intent";
         public const string Allergists = "Allergists";
+        public const string Booking = "Booking";
     }
 }

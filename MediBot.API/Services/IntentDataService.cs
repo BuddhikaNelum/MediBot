@@ -22,7 +22,7 @@ namespace MediBot.API.Services
             if(apiType == APITypeEnum.Doctors)
             {
 
-                if(intentName == null)
+                if(intentName == null || intentName == IntentTypes.Booking)
                 {
                     doctors = await context.Doctors.Include(x => x.Speciality).ToListAsync();
                 }
@@ -39,6 +39,17 @@ namespace MediBot.API.Services
                 }
             }
             return doctors;
+        }
+
+        public async Task<List<Speciality>> GetSpecialities(APITypeEnum apiType, string intentName)
+        {
+            var specialities = new List<Speciality>();
+
+            if(apiType == APITypeEnum.Specialities && intentName == IntentTypes.Booking || intentName == null)
+            {
+                specialities = await context.Specialities.Include(x => x.Doctors).ToListAsync();
+            }
+            return specialities;
         }
     }
 }
