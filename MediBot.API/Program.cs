@@ -1,4 +1,6 @@
 using MediBot.API;
+using MediBot.API.Data;
+using Microsoft.EntityFrameworkCore;
 
 IConfiguration configuration = new ConfigurationBuilder()
                             .AddJsonFile("appsettings.json")
@@ -44,4 +46,19 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+try
+{
+    using var scope = app.Services.CreateScope();
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<AppDBContext>();
+    await context.Database.MigrateAsync();
+    await Seeder.SeedData(context);
+}
+catch (Exception)
+{
+
+    throw;
+}
+
+await app.RunAsync();
