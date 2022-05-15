@@ -4,6 +4,7 @@ type Chat = {
   fulFillmentText: string;
   intentName: string;
   isIntentResponse: boolean;
+  apiType: number;
 }
 
 type ChatResponse = Chat;
