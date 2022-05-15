@@ -3,6 +3,7 @@ using MediBot.API.Interfaces;
 using MediBot.API.Services;
 using MediBot.API.Settings;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 
 namespace MediBot.API
 {
@@ -10,6 +11,9 @@ namespace MediBot.API
     {
         public static IServiceCollection InjectServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddControllers().AddJsonOptions(x =>
+                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
             services.AddDbContext<AppDBContext>(o => o.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
             //AppSettings
@@ -17,6 +21,7 @@ namespace MediBot.API
 
             //Services
             services.AddScoped<IDialogFlowWebService, DialogFlowWebService>();
+            services.AddScoped<IIntentDataService, IntentDataService>();
 
             return services;
         }

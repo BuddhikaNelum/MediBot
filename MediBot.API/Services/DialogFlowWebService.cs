@@ -1,5 +1,6 @@
 ﻿using Google.Cloud.Dialogflow.V2;
 using MediBot.API.Constants;
+using MediBot.API.Enums;
 using MediBot.API.Interfaces;
 using MediBot.API.Models;
 using MediBot.API.Settings;
@@ -10,12 +11,14 @@ namespace MediBot.API.Services
     public class DialogFlowWebService : IDialogFlowWebService
     {
         private readonly IOptions<DialogFlowSettings> dialogFlowSettings;
+        private readonly IIntentDataService intentDataService;
         private SessionsClient sessionsClient;
         private SessionName sessionName;
 
-        public DialogFlowWebService(IOptions<DialogFlowSettings> dialogFlowSettings)
+        public DialogFlowWebService(IOptions<DialogFlowSettings> dialogFlowSettings, IIntentDataService intentDataService)
         {
             this.dialogFlowSettings = dialogFlowSettings;
+            this.intentDataService = intentDataService;
             SetEnvironmentVariable();
         }
 
@@ -51,10 +54,11 @@ namespace MediBot.API.Services
 
             return intent switch
             {
-                IntentTypes.DefaultWelcomeIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
-                IntentTypes.CommonSymtoms => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
-                IntentTypes.DefaultFallbackIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
-                _ => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
+                IntentTypes.DefaultWelcomeIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.NotRequired },
+                IntentTypes.CommonSymtoms => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.NotRequired },
+                IntentTypes.Allergists => new IntentResult { IntentName= intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse= true, APIType = APITypeEnum.Doctors },
+                IntentTypes.DefaultFallbackIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.NotRequired },
+                _ => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.NotRequired },
             };
         }
 

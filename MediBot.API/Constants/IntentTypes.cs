@@ -5,5 +5,6 @@
         public const string DefaultWelcomeIntent = "Default Welcome Intent";
         public const string CommonSymtoms = "CommonSymtoms";
         public const string DefaultFallbackIntent = "Default Fallback Intent";
+        public const string Allergists = "Allergists";
     }
 }

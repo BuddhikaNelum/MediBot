@@ -1,4 +1,5 @@
-﻿using MediBot.API.Interfaces;
+﻿using MediBot.API.Dtos;
+using MediBot.API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MediBot.API.Controllers
@@ -8,16 +9,25 @@ namespace MediBot.API.Controllers
     public class DialogFlowController : ControllerBase
     {
         private readonly IDialogFlowWebService dialogFlowWebService;
+        private readonly IIntentDataService intentDataService;
 
-        public DialogFlowController(IDialogFlowWebService dialogFlowWebService)
+        public DialogFlowController(IDialogFlowWebService dialogFlowWebService, IIntentDataService intentDataService)
         {
             this.dialogFlowWebService = dialogFlowWebService;
+            this.intentDataService = intentDataService;
         }
 
         [HttpGet("DetectIntent/{text}")]
         public async Task<IActionResult> DetectIntentAsync([FromRoute]string text)
         {
             var response = await dialogFlowWebService.DetectIntentAsync(text);
+            return Ok(response);
+        }
+
+        [HttpPost("Doctors")]
+        public async Task<IActionResult> GetDoctors([FromBody]DoctorDto doctorDto)
+        {
+            var response = await intentDataService.GetDoctors(doctorDto.APIType, doctorDto.IntentName);
             return Ok(response);
         }
     }
