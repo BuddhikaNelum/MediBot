@@ -11,7 +11,7 @@ const ChatHeader = () => {
       </Avatar>
 
       <div>
-        <p className="d-name">Mediibot</p>
+        <p className="d-name">MediBot</p>
       </div>
     </div>
   );
