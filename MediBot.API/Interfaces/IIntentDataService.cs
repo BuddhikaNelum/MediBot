@@ -1,4 +1,5 @@
 ﻿using MediBot.API.Data;
+using MediBot.API.Dtos;
 using MediBot.API.Enums;
 
 namespace MediBot.API.Interfaces
@@ -7,5 +8,6 @@ namespace MediBot.API.Interfaces
     {
         Task<List<Doctor>> GetDoctors(APITypeEnum apiType, string intentName);
         Task<List<Speciality>> GetSpecialities(APITypeEnum apiType, string intentName);
+        Task<BookingResponseDto> PlaceBooking(BookingDto bookingDto);
     }
 }

@@ -10,5 +10,8 @@ namespace MediBot.API.Data
 
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Speciality> Specialities { get; set; }
+        public DbSet<TimeSlot> TimeSlots { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Patient> Patients { get; set; }
     }
 }

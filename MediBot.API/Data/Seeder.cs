@@ -44,27 +44,32 @@ namespace MediBot.API.Data
                 new Doctor
                 {
                     Name = "Dr.Buddhika Nelum",
-                    SpecialityId = 1
+                    SpecialityId = 1,
+                    TimeSlotIds = "1,2",
                 },
                 new Doctor
                 {
                     Name = "Dr.Shashika Janith",
-                    SpecialityId = 2
+                    SpecialityId = 2,
+                    TimeSlotIds = "1,2,3",
                 },
                 new Doctor
                 {
                     Name = "Dr.Ashala Senanayake",
-                    SpecialityId = 3
+                    SpecialityId = 3,
+                    TimeSlotIds = "2,4",
                 },
                 new Doctor
                 {
                     Name = "Dr.Stephen Strange",
-                    SpecialityId = 4
+                    SpecialityId = 4,
+                    TimeSlotIds = "2,3,4",
                 },
                 new Doctor
                 {
                     Name = "Dr.Otto Octavius",
-                    SpecialityId = 5
+                    SpecialityId = 5,
+                    TimeSlotIds = "1,2,3,4",
                 }
             };
 
@@ -73,6 +78,38 @@ namespace MediBot.API.Data
             if (!doctors.Any())
             {
                 await context.Doctors.AddRangeAsync(doctorsList);
+                await context.SaveChangesAsync();
+            }
+
+            var timeSlotsList = new List<TimeSlot>
+            {
+                new TimeSlot
+                {
+                    RoomId = 10,
+                    Time = "6PM - 7PM"
+                },
+                new TimeSlot
+                {
+                    RoomId = 11,
+                    Time = "7PM - 8PM"
+                },
+                 new TimeSlot
+                {
+                    RoomId = 12,
+                    Time = "8PM - 9PM"
+                },
+                 new TimeSlot
+                {
+                    RoomId = 13,
+                    Time = "9PM - 10PM"
+                }
+            };
+
+            var timeSlots = await context.TimeSlots.ToListAsync();
+
+            if(!timeSlots.Any())
+            {
+                await context.TimeSlots.AddRangeAsync(timeSlotsList);
                 await context.SaveChangesAsync();
             }
         }

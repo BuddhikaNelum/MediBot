@@ -1,4 +1,5 @@
 ﻿using MediBot.API.Dtos;
+using MediBot.API.Enums;
 using MediBot.API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,13 +29,22 @@ namespace MediBot.API.Controllers
         public async Task<IActionResult> GetDoctors([FromBody]DoctorDto doctorDto)
         {
             var response = await intentDataService.GetDoctors(doctorDto.APIType, doctorDto.IntentName);
-            return Ok(response);
+            var result = new { data = response, apiType = APITypeEnum.Bookings, NeedAction = true };
+            return Ok(result);
         }
 
         [HttpPost("Specialities")]
         public async Task<IActionResult> Specialities([FromBody] SpecialityDto specialityDto)
         {
             var response = await intentDataService.GetSpecialities(specialityDto.APIType, specialityDto.IntentName);
+            var result = new { data = response, apiType = APITypeEnum.Bookings, NeedAction = true };
+            return Ok(result);
+        }
+
+        [HttpPost("Booking")]
+        public async Task<IActionResult> Booking([FromBody] BookingDto bookingDto)
+        {
+            var response = await intentDataService.PlaceBooking(bookingDto);
             return Ok(response);
         }
     }
