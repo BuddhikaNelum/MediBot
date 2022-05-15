@@ -54,7 +54,7 @@ namespace MediBot.API.Services
                 IntentTypes.DefaultWelcomeIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
                 IntentTypes.CommonSymtoms => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
                 IntentTypes.DefaultFallbackIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
-                _ => null,
+                _ => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true },
             };
         }
 
