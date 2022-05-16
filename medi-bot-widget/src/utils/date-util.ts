@@ -9,7 +9,13 @@ const formatDateTime = (dateStr: string, format: string) => {
   return dayjs(dateStr).format(format);
 }
 
-const isValidDate = (dateStr: string) => dayjs(dateStr).isValid();
+const isValidDate = (dateStr: string) => {
+  const d = dayjs(dateStr);
+  
+  if (d.isValid()) {
+    return d.isAfter(dayjs(), 'day');
+  }
+}
 
 export {
   formatDateTime,
