@@ -24,7 +24,14 @@ enum Step {
   SPECIALITIES = 1,
   DOCTORS = 2,
   TIME_SLOTS = 3,
-  CLIENT_DETAILS = 4,
+  CLIENT_NAME = 4,
+  CLIENT_NAME_PENDING = 5,
+  CLIENT_EMAIL = 6,
+  CLIENT_EMAIL_PENDING = 7,
+  CLIENT_AGE = 8,
+  CLIENT_AGE_PENDING = 9,
+  CLIENT_GENDER = 10,
+  CLIENT_GENDER_PENDING = 11,
 };
 
 function App() {
@@ -32,10 +39,13 @@ function App() {
   const [messages, setMessaage] = useState<Array<Message>>([]);
   const [doctors, setDoctors] = useState<Array<any>>([]);
   const [specialities, setSpecialities] = useState<Specialities>();
+  const [completed, setCompleted] = useState<any>({});
 
   const chatIcRef = useRef<any>();
   const closeIcRef = useRef<any>();
   const chatRef = useRef<any>();
+  const stepRef = useRef<number>();
+  const clientDetailsRef = useRef<Booking>({} as Booking);
 
   const [triggerChat, { data: chatData, isSuccess: isChatSuccess }] = useLazyChatQuery();
   const [triggerSpecialities, { data: specialitiesData, isSuccess: isSpecialitiesSuccess }] = useLazySpecialitiesQuery();
@@ -44,8 +54,6 @@ function App() {
 
   useEffect(() => {
     if (isChatSuccess && chatData) {
-      // const m: Message = { text: data.fulFillmentText, author: { id: "bot" } };
-      // dispatch(addMessage(m));
       updateThread([{ text: chatData.fulFillmentText, author: bot }]);
       handleIntentTypeApiCall(chatData.apiType, chatData.intentName);
     }
@@ -64,47 +72,101 @@ function App() {
     }
   }, [isDoctorsSuccess, doctorsData]);
 
-  const CustomMessage = (props: any) => {
-    return (
-      <>
-        {props.messageInput}
-        {props.sendButton}
-      </>
-    );
-  };
+  useEffect(() => {
+    if (isBookingSuccess && bookingData) {
+      if (bookingData.status) {
+        updateThread([{ text: bookingData.message, author: bot }]);
+      }
+    }
+  }, [isBookingSuccess, bookingData]);
 
   const addNewMessage = (e: ChatMessageSendEvent) => {
     let m: any = e.message.text;
 
-    if (typeof m === 'object') {
-      switch (m.step) {
-        case Step.SPECIALITIES: {
-          const speciality = specialities?.data.find(s => s.id === m.specialityId);
-          doctorsActionsHandler(speciality!.specialityName, speciality!.doctors);
-          break;
-        }
-        case Step.DOCTORS: {
-          timeSlotsActionsHandler(m.data);
-          break;
-        }
-        case Step.TIME_SLOTS: {
-          updateThread([{ text: m.timeSlot.label, author: user }]);
-          break;
-        }
-        default:
-          break;
+    switch (stepRef.current) {
+      case Step.SPECIALITIES: {
+        const speciality = specialities?.data.find(s => s.id === m.specialityId);
+        doctorsActionsHandler(speciality!.specialityName, speciality!.doctors);
+        break;
       }
-    } else {
-      m = m?.trim() || "";
+      case Step.DOCTORS: {
+        clientDetailsRef.current.doctorId = m.data.id;
 
-      if (m.length) {
-        updateThread([{ text: m, author: user }]);
-        triggerChat(m, false);
+        timeSlotsActionsHandler(m.data);
+        break;
+      }
+      case Step.TIME_SLOTS: {
+        clientDetailsRef.current.timeSlotId = m.timeSlot.id;
+
+        const m1 = { text: m.timeSlot.label, author: user };
+        const m2 = { author: bot, text: "Please enter your name." };
+        updateThread([m1, m2]);
+
+        clientDetailsRef.current.timeSlotId = m.timeSlot.id;
+        stepRef.current = Step.CLIENT_NAME;
+        break;
+      }
+      case Step.CLIENT_NAME: {
+        const m1 = { text: m, author: user };
+        const m2 = { author: bot, text: "Please enter your email address." };
+        updateThread([m1, m2]);
+
+        clientDetailsRef.current.name = m;
+        stepRef.current = Step.CLIENT_EMAIL;
+        break;
+      }
+      case Step.CLIENT_EMAIL: {
+        const m1 = { text: m, author: user };
+
+        const suggestedActions: Array<Action> = [
+          { type: "reply", title: "Male", value: { id: 1, label: "Male" } },
+          { type: "reply", title: "Female", value: { id: 2, label: "Female" } },
+          { type: "reply", title: "Other", value: { id: 3, label: "Other" } },
+        ];
+        const m2 = { author: bot, text: "Please enter your birth gender.", suggestedActions };
+        updateThread([m1, m2]);
+
+        stepRef.current = Step.CLIENT_GENDER;
+        clientDetailsRef.current.email = m;
+        break;
+      }
+      case Step.CLIENT_GENDER: {
+        const m1 = { text: m.label, author: user };
+        const m2 = { author: bot, text: "Please enter your age." };
+        updateThread([m1, m2]);
+
+        stepRef.current = Step.CLIENT_AGE;
+        clientDetailsRef.current.gender = m.id;
+        break;
+      }
+      case Step.CLIENT_AGE: {
+        const m1 = { text: m.label, author: user };
+        updateThread([m1]);
+
+        triggerBooking(clientDetailsRef.current);
+        break;
+      }
+      // case Step.CLIENT_NAME_PENDING: {
+      //   updateThread([{ text: m, author: user }]);
+      //   stepRef.current = Step.CLIENT_EMAIL;
+      //   clientDetailsRef.current.name = m;
+      //   break;
+      // }
+      default: {
+        m = m?.trim() || "";
+
+        if (m.length) {
+          updateThread([{ text: m, author: user }]);
+          triggerChat(m, false);
+        }
+
+        break;
       }
     }
   }
 
   const specialitiesActionsHandler = (data: Array<Speciality>) => {
+    stepRef.current = Step.SPECIALITIES;
     const suggestedActions: Array<Action> = [];
     data.forEach(s => suggestedActions.push({
       type: "reply",
@@ -117,6 +179,7 @@ function App() {
   }
 
   const doctorsActionsHandler = (specialityName: string, data: Array<Doctor>) => {
+    stepRef.current = Step.DOCTORS;
     const suggestedActions: Array<Action> = [];
     data.forEach(d => suggestedActions.push({ type: "reply", title: d.name, value: { data: d, step: Step.DOCTORS } }));
 
@@ -126,6 +189,7 @@ function App() {
   }
 
   const timeSlotsActionsHandler = (data: Doctor) => {
+    stepRef.current = Step.TIME_SLOTS;
     const suggestedActions: Array<Action> = [];
     const timeSlotIds = data.timeSlotIds.split(',');
     timeSlotIds.forEach(id => suggestedActions.push({
@@ -133,6 +197,8 @@ function App() {
       title: timeSlot[id],
       value: { timeSlot: { id: id, label: timeSlot[id] }, step: Step.TIME_SLOTS }
     }));
+
+    stepRef.current = Step.TIME_SLOTS;
 
     const m1 = { text: data.name, author: user };
     const m2 = { author: bot, text: "Please select a time slot.", suggestedActions };
@@ -172,6 +238,15 @@ function App() {
 
     setChatWindowOpen(isOpen);
   }
+
+  const CustomMessage = (props: any) => {
+    return (
+      <>
+        {props.messageInput}
+        {props.sendButton}
+      </>
+    );
+  };
 
   return (
     <div className="chat-widget-layout">

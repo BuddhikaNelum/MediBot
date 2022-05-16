@@ -22,7 +22,7 @@ export const apiSlice = createApi({
         body
       })
     }),
-    booking: build.query<any, BookingRequest>({
+    booking: build.query<BookingResponse, BookingRequest>({
       query: (body) => ({
         url: `DialogFlow/Booking`,
         method: 'POST',
