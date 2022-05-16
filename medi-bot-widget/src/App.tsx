@@ -11,6 +11,8 @@ import crossIc from "./assets/images/cross.svg";
 import chatIc from "./assets/images/speech-bubble.svg";
 import { ApiType } from "./enums/api-types";
 import { timeSlot } from "./constants/time-slots";
+import { DateFormat, formatDateTime, isValidDate } from "./utils/date-util";
+import { isValidmail } from "./utils/validators";
 
 const user: User = {
   id: 1,
@@ -25,13 +27,14 @@ enum Step {
   DOCTORS = 2,
   TIME_SLOTS = 3,
   CLIENT_NAME = 4,
-  CLIENT_NAME_PENDING = 5,
+  // CLIENT_NAME_PENDING = 5,
   CLIENT_EMAIL = 6,
-  CLIENT_EMAIL_PENDING = 7,
+  // CLIENT_EMAIL_PENDING = 7,
   CLIENT_AGE = 8,
-  CLIENT_AGE_PENDING = 9,
+  // CLIENT_AGE_PENDING = 9,
   CLIENT_GENDER = 10,
-  CLIENT_GENDER_PENDING = 11,
+  // CLIENT_GENDER_PENDING = 11,
+  BOOKING_DATE = 11,
 };
 
 function App() {
@@ -45,7 +48,7 @@ function App() {
   const closeIcRef = useRef<any>();
   const chatRef = useRef<any>();
   const stepRef = useRef<number>();
-  const clientDetailsRef = useRef<Booking>({} as Booking);
+  const bookingDetailsRef = useRef<Booking>({} as Booking);
 
   const [triggerChat, { data: chatData, isSuccess: isChatSuccess }] = useLazyChatQuery();
   const [triggerSpecialities, { data: specialitiesData, isSuccess: isSpecialitiesSuccess }] = useLazySpecialitiesQuery();
@@ -76,6 +79,8 @@ function App() {
     if (isBookingSuccess && bookingData) {
       if (bookingData.status) {
         updateThread([{ text: bookingData.message, author: bot }]);
+        stepRef.current = undefined;
+        bookingDetailsRef.current = {} as Booking;
       }
     }
   }, [isBookingSuccess, bookingData]);
@@ -90,20 +95,35 @@ function App() {
         break;
       }
       case Step.DOCTORS: {
-        clientDetailsRef.current.doctorId = m.data.id;
+        bookingDetailsRef.current.doctorId = m.data.id;
 
         timeSlotsActionsHandler(m.data);
         break;
       }
       case Step.TIME_SLOTS: {
-        clientDetailsRef.current.timeSlotId = m.timeSlot.id;
-
         const m1 = { text: m.timeSlot.label, author: user };
-        const m2 = { author: bot, text: "Please enter your name." };
-        updateThread([m1, m2]);
+        const m2 = { author: bot, text: "Please enter the booking date. Use the following format" };
+        const m3 = { author: bot, text: "yyyy-mm-dd (e.g. 2022-05-15)" };
+        updateThread([m1, m2, m3]);
 
-        clientDetailsRef.current.timeSlotId = m.timeSlot.id;
-        stepRef.current = Step.CLIENT_NAME;
+        bookingDetailsRef.current.timeSlotId = m.timeSlot.id;
+        stepRef.current = Step.BOOKING_DATE;
+        break;
+      }
+      case Step.BOOKING_DATE: {
+        if (isValidDate(m)) {
+          const m1 = { text: m, author: user };
+          const m2 = { author: bot, text: "Please enter your name." };
+          updateThread([m1, m2]);
+
+          bookingDetailsRef.current.dateTime = `${formatDateTime(m, DateFormat.FORMAT_1)}T00:00:00.000Z`;
+          stepRef.current = Step.CLIENT_NAME;
+        } else {
+          const m1 = { text: m, author: user };
+          const m2 = { author: bot, text: "The date you entered is invalid. Please enter the booking date again." };
+          updateThread([m1, m2]);
+        }
+
         break;
       }
       case Step.CLIENT_NAME: {
@@ -111,23 +131,30 @@ function App() {
         const m2 = { author: bot, text: "Please enter your email address." };
         updateThread([m1, m2]);
 
-        clientDetailsRef.current.name = m;
+        bookingDetailsRef.current.name = m;
         stepRef.current = Step.CLIENT_EMAIL;
         break;
       }
       case Step.CLIENT_EMAIL: {
-        const m1 = { text: m, author: user };
+        if (isValidmail(m)) {
+          const m1 = { text: m, author: user };
+  
+          const suggestedActions: Array<Action> = [
+            { type: "reply", title: "Male", value: { id: 1, label: "Male" } },
+            { type: "reply", title: "Female", value: { id: 2, label: "Female" } },
+            { type: "reply", title: "Other", value: { id: 3, label: "Other" } },
+          ];
+          const m2 = { author: bot, text: "Please enter your birth gender.", suggestedActions };
+          updateThread([m1, m2]);
+  
+          stepRef.current = Step.CLIENT_GENDER;
+          bookingDetailsRef.current.email = m;
+        } else {
+          const m1 = { text: m, author: user };
+          const m2 = { text: "Email is invalid! Please re-enter your email address.", author: user };
+          updateThread([m1, m2]);
+        }
 
-        const suggestedActions: Array<Action> = [
-          { type: "reply", title: "Male", value: { id: 1, label: "Male" } },
-          { type: "reply", title: "Female", value: { id: 2, label: "Female" } },
-          { type: "reply", title: "Other", value: { id: 3, label: "Other" } },
-        ];
-        const m2 = { author: bot, text: "Please enter your birth gender.", suggestedActions };
-        updateThread([m1, m2]);
-
-        stepRef.current = Step.CLIENT_GENDER;
-        clientDetailsRef.current.email = m;
         break;
       }
       case Step.CLIENT_GENDER: {
@@ -136,14 +163,14 @@ function App() {
         updateThread([m1, m2]);
 
         stepRef.current = Step.CLIENT_AGE;
-        clientDetailsRef.current.gender = m.id;
+        bookingDetailsRef.current.gender = m.id;
         break;
       }
       case Step.CLIENT_AGE: {
         const m1 = { text: m.label, author: user };
         updateThread([m1]);
 
-        triggerBooking(clientDetailsRef.current);
+        triggerBooking(bookingDetailsRef.current);
         break;
       }
       // case Step.CLIENT_NAME_PENDING: {
