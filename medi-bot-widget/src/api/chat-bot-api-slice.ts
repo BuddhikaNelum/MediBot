@@ -8,7 +8,7 @@ export const apiSlice = createApi({
     chat: build.query<ChatResponse, string>({
       query: (message) => `DialogFlow/DetectIntent/${message}`
     }),
-    doctors: build.query<any, DoctorsRequest>({
+    doctors: build.query<DoctorsResponse, DoctorsRequest>({
       query: (body) => ({
         url: `DialogFlow/Doctors`,
         method: 'POST',

@@ -3,13 +3,6 @@ type SpecialitiesRequest = {
   intentName: string;
 }
 
-type Doctor = {
-  id: number;
-  name: string;
-  specialityId: number;
-  timeSlotIds: string;
-}
-
 type Speciality = {
   id: number;
   specialityName: string;

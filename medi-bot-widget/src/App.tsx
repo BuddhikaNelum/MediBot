@@ -27,27 +27,23 @@ enum Step {
   DOCTORS = 2,
   TIME_SLOTS = 3,
   CLIENT_NAME = 4,
-  // CLIENT_NAME_PENDING = 5,
-  CLIENT_EMAIL = 6,
-  // CLIENT_EMAIL_PENDING = 7,
-  CLIENT_AGE = 8,
-  // CLIENT_AGE_PENDING = 9,
-  CLIENT_GENDER = 10,
-  // CLIENT_GENDER_PENDING = 11,
-  BOOKING_DATE = 11,
+  CLIENT_EMAIL = 5,
+  CLIENT_AGE = 6,
+  CLIENT_GENDER = 7,
+  BOOKING_DATE = 8,
 };
 
 function App() {
   const [chatWindowOpen, setChatWindowOpen] = useState(false);
   const [messages, setMessaage] = useState<Array<Message>>([]);
-  const [doctors, setDoctors] = useState<Array<any>>([]);
+  const [doctors, setDoctors] = useState<Doctors>();
   const [specialities, setSpecialities] = useState<Specialities>();
-  const [completed, setCompleted] = useState<any>({});
 
   const chatIcRef = useRef<any>();
   const closeIcRef = useRef<any>();
   const chatRef = useRef<any>();
   const stepRef = useRef<number>();
+  const currApiTypeRef = useRef<number>();
   const bookingDetailsRef = useRef<Booking>({} as Booking);
 
   const [triggerChat, { data: chatData, isSuccess: isChatSuccess }] = useLazyChatQuery();
@@ -71,7 +67,8 @@ function App() {
 
   useEffect(() => {
     if (isDoctorsSuccess && doctorsData) {
-      console.log(doctorsData);
+      setDoctors(doctorsData);
+      doctorsActionsHandler(doctorsData.data, ApiType.DOCTORS);
     }
   }, [isDoctorsSuccess, doctorsData]);
 
@@ -91,7 +88,7 @@ function App() {
     switch (stepRef.current) {
       case Step.SPECIALITIES: {
         const speciality = specialities?.data.find(s => s.id === m.specialityId);
-        doctorsActionsHandler(speciality!.specialityName, speciality!.doctors);
+        doctorsActionsHandler(speciality!.doctors, ApiType.SPECIALITIES, speciality!.specialityName);
         break;
       }
       case Step.DOCTORS: {
@@ -173,12 +170,6 @@ function App() {
         triggerBooking(bookingDetailsRef.current);
         break;
       }
-      // case Step.CLIENT_NAME_PENDING: {
-      //   updateThread([{ text: m, author: user }]);
-      //   stepRef.current = Step.CLIENT_EMAIL;
-      //   clientDetailsRef.current.name = m;
-      //   break;
-      // }
       default: {
         m = m?.trim() || "";
 
@@ -205,14 +196,19 @@ function App() {
     updateThread([m]);
   }
 
-  const doctorsActionsHandler = (specialityName: string, data: Array<Doctor>) => {
+  const doctorsActionsHandler = (data: Array<Doctor>, apiType: number, specialityName?: string) => {
     stepRef.current = Step.DOCTORS;
     const suggestedActions: Array<Action> = [];
     data.forEach(d => suggestedActions.push({ type: "reply", title: d.name, value: { data: d, step: Step.DOCTORS } }));
 
-    const m1 = { text: specialityName, author: user };
-    const m2 = { author: bot, text: "Please select a doctor.", suggestedActions };
-    updateThread([m1, m2]);
+    if (apiType === ApiType.SPECIALITIES) {
+      const m1 = { text: specialityName, author: user };
+      const m2 = { author: bot, text: "Please select a doctor.", suggestedActions };
+      updateThread([m1, m2]);
+    } else if (apiType === ApiType.DOCTORS) {
+      const m1 = { author: bot, text: "Please select a doctor.", suggestedActions };
+      updateThread([m1]);
+    }
   }
 
   const timeSlotsActionsHandler = (data: Doctor) => {
