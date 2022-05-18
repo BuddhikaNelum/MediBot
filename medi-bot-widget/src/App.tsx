@@ -4,8 +4,6 @@ import { Action, Chat, ChatMessageSendEvent, Message, User } from "@progress/ken
 import ChatHeader from "./components/chat-header";
 
 import { useLazyChatQuery, useLazySpecialitiesQuery, useLazyDoctorsQuery, useLazyBookingQuery } from "./api/chat-bot-api-slice";
-import { useAppDispatch } from "./hooks/hooks";
-import { addMessage } from "./components/chat-slice";
 
 import crossIc from "./assets/images/cross.svg";
 import chatIc from "./assets/images/speech-bubble.svg";
@@ -47,40 +45,44 @@ function App() {
   const bookingDetailsRef = useRef<Booking>({} as Booking);
 
   const [triggerChat, { data: chatData, isSuccess: isChatSuccess }] = useLazyChatQuery();
-  const [triggerSpecialities, { data: specialitiesData, isSuccess: isSpecialitiesSuccess }] = useLazySpecialitiesQuery();
-  const [triggerDoctors, { data: doctorsData, isSuccess: isDoctorsSuccess }] = useLazyDoctorsQuery();
-  const [triggerBooking, { data: bookingData, isSuccess: isBookingSuccess }] = useLazyBookingQuery();
+  const [triggerSpecialities] = useLazySpecialitiesQuery();
+  const [triggerDoctors] = useLazyDoctorsQuery();
+  const [triggerBooking] = useLazyBookingQuery();
 
   useEffect(() => {
     if (isChatSuccess && chatData) {
       updateThread([{ text: chatData.fulFillmentText, author: bot }]);
       handleIntentTypeApiCall(chatData.apiType, chatData.intentName);
     }
-  }, [chatData]);
+  }, [isChatSuccess, chatData]);
 
-  useEffect(() => {
-    if (isChatSuccess && specialitiesData) {
-      setSpecialities(specialitiesData);
-      specialitiesActionsHandler(specialitiesData.data);
-    }
-  }, [isSpecialitiesSuccess, specialitiesData]);
+  const handleBooking = async () => {
+    const { data, isSuccess } = await triggerBooking(bookingDetailsRef.current, false);
 
-  useEffect(() => {
-    if (isDoctorsSuccess && doctorsData) {
-      setDoctors(doctorsData);
-      doctorsActionsHandler(doctorsData.data, ApiType.DOCTORS);
+    if (isSuccess) {
+      updateThread([{ text: data.message, author: bot }]);
+      stepRef.current = undefined;
+      bookingDetailsRef.current = {} as Booking;
     }
-  }, [isDoctorsSuccess, doctorsData]);
+  }
 
-  useEffect(() => {
-    if (isBookingSuccess && bookingData) {
-      if (bookingData.status) {
-        updateThread([{ text: bookingData.message, author: bot }]);
-        stepRef.current = undefined;
-        bookingDetailsRef.current = {} as Booking;
-      }
+  const handleFetchSpecialities = async (apiType: number, intentName: string) => {
+    const { data, isSuccess } = await triggerSpecialities({ apiType, intentName });
+
+    if (isSuccess) {
+      setSpecialities(data);
+      specialitiesActionsHandler(data.data);
     }
-  }, [isBookingSuccess, bookingData]);
+  }
+
+  const handleFetchDoctors = async (apiType: number, intentName: string) => {
+    const { data, isSuccess } = await triggerDoctors({ apiType, intentName });
+
+    if (isSuccess) {
+      setDoctors(data);
+      doctorsActionsHandler(data.data, ApiType.DOCTORS);
+    }
+  }
 
   const addNewMessage = (e: ChatMessageSendEvent) => {
     let m: any = e.message.text;
@@ -135,7 +137,7 @@ function App() {
       case Step.CLIENT_EMAIL: {
         if (isValidmail(m)) {
           const m1 = { text: m, author: user };
-  
+
           const suggestedActions: Array<Action> = [
             { type: "reply", title: "Male", value: { id: 1, label: "Male" } },
             { type: "reply", title: "Female", value: { id: 2, label: "Female" } },
@@ -143,7 +145,7 @@ function App() {
           ];
           const m2 = { author: bot, text: "Please enter your birth gender.", suggestedActions };
           updateThread([m1, m2]);
-  
+
           stepRef.current = Step.CLIENT_GENDER;
           bookingDetailsRef.current.email = m;
         } else {
@@ -166,8 +168,7 @@ function App() {
       case Step.CLIENT_AGE: {
         const m1 = { text: m.label, author: user };
         updateThread([m1]);
-
-        triggerBooking(bookingDetailsRef.current);
+        handleBooking();
         break;
       }
       default: {
@@ -236,11 +237,11 @@ function App() {
   const handleIntentTypeApiCall = (apiType: number, intentName: string) => {
     switch (apiType) {
       case ApiType.SPECIALITIES: {
-        triggerSpecialities({ apiType, intentName }, false);
+        handleFetchSpecialities(apiType, intentName);
         break;
       }
       case ApiType.DOCTORS: {
-        triggerDoctors({ apiType, intentName }, false);
+        handleFetchDoctors(apiType, intentName);
         break;
       }
       default:
