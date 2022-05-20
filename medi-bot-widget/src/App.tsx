@@ -5,7 +5,6 @@ import ChatHeader from "./components/chat-header";
 
 import { useLazyChatQuery, useLazySpecialitiesQuery, useLazyDoctorsQuery, useLazyBookingQuery } from "./api/chat-bot-api-slice";
 
-import crossIc from "./assets/images/cross.svg";
 import chatIc from "./assets/images/speech-bubble.svg";
 import { ApiType } from "./enums/api-types";
 import { timeSlot } from "./constants/time-slots";
@@ -249,19 +248,7 @@ function App() {
     }
   }
 
-  const toggleChatWindow = () => {
-    const isOpen = !chatWindowOpen;
-
-    if (isOpen) {
-      chatIcRef.current.classList.add('hidden');
-      closeIcRef.current.classList.remove('hidden');
-    } else {
-      chatIcRef.current.classList.remove('hidden');
-      closeIcRef.current.classList.add('hidden');
-    }
-
-    setChatWindowOpen(isOpen);
-  }
+  const toggleChatWindow = () => setChatWindowOpen(!chatWindowOpen);
 
   const CustomMessage = (props: any) => {
     return (
@@ -274,21 +261,22 @@ function App() {
 
   return (
     <div className="chat-widget-layout">
-      <div className="chat-container" id="chatContainer">
-        <ChatHeader />
-
-        <Chat
-          ref={chatRef}
-          user={user}
-          messages={messages}
-          onMessageSend={addNewMessage}
-          placeholder={"Type a message..."}
-          messageBox={CustomMessage}
-        />
-      </div>
+      {
+        chatWindowOpen &&
+        <div className="chat-container" id="chatContainer">
+          <ChatHeader />
+          <Chat
+            ref={chatRef}
+            user={user}
+            messages={messages}
+            onMessageSend={addNewMessage}
+            placeholder={"Type a message..."}
+            messageBox={CustomMessage}
+          />
+        </div>
+      }
 
       <div className="button-container" onClick={toggleChatWindow}>
-        <img src={crossIc} className="icon hidden" ref={closeIcRef} />
         <img src={chatIc} className="icon" ref={chatIcRef} />
       </div>
     </div>

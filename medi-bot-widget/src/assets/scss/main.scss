@@ -1,5 +1,5 @@
 /** Start: overriding theme values */
-$primary: #7269ef;
+$primary: #5a8d03;
 
 @import "~@progress/kendo-theme-default/dist/all.scss";
 /** End: overriding theme values */
@@ -34,8 +34,10 @@ $primary: #7269ef;
     height: 0px;
     width: 0px;
   }
+
   .k-chat {
     margin: 0;
+
     .k-message-list {
       &::-webkit-scrollbar {
         width: 7px;
@@ -63,12 +65,14 @@ $primary: #7269ef;
   .img-speech-bubble {
     width: 6rem;
   }
+
   .title {
     font-size: 1.6rem;
     color: gray;
     margin-top: 1rem;
     margin-bottom: 0.25rem;
   }
+
   .message {
     font-size: 1.1rem;
     color: gray;
@@ -80,13 +84,15 @@ $primary: #7269ef;
 
 .button-container {
   cursor: pointer;
-  background-color: #7269ef;
+  background-color: #eef6ec;
   width: 60px;
   height: 60px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-box-shadow: 0px 0px 30px 0px rgba(90, 141, 3, 0.7);
+  box-shadow: 0px 0px 30px 0px rgba(90, 141, 3, 0.7);
 
   .icon {
     transition: transform 0.3s ease;
@@ -105,11 +111,13 @@ $primary: #7269ef;
   align-items: center;
   gap: 1rem;
   padding: 10px 20px;
+
   .k-avatar {
     width: 48px;
     height: 48px;
     flex-basis: 48px;
   }
+
   .d-name {
     font-weight: 600;
     font-size: 0.8rem;
@@ -118,9 +126,11 @@ $primary: #7269ef;
 
 .emoji-picker-pop {
   background: transparent;
+
   .emoji-picker-container {
     width: 247px;
   }
+
   .emoji-mart {
     border: none;
   }
