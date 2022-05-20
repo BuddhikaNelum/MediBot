@@ -43,8 +43,20 @@ namespace MediBot.API.Services
                         case IntentTypes.Allergists:
                             doctors = await context.Doctors.Include(x => x.Speciality).Where(x => x.SpecialityId == 1).ToListAsync();
                             return doctors;
+                        case IntentTypes.Cardiologists:
+                            doctors = await context.Doctors.Include(x => x.Speciality).Where(x => x.SpecialityId == 2).ToListAsync();
+                            return doctors;
+                        case IntentTypes.Dermatologists:
+                            doctors = await context.Doctors.Include(x => x.Speciality).Where(x => x.SpecialityId == 3).ToListAsync();
+                            return doctors;
+                        case IntentTypes.Psychiatrists:
+                            doctors = await context.Doctors.Include(x => x.Speciality).Where(x => x.SpecialityId == 4).ToListAsync();
+                            return doctors;
+                        case IntentTypes.Ophthalmologists:
+                            doctors = await context.Doctors.Include(x => x.Speciality).Where(x => x.SpecialityId == 5).ToListAsync();
+                            return doctors;
                         default:
-                            throw new Exception();
+                            return doctors;
                     }   
                 }
             }
@@ -107,7 +119,7 @@ namespace MediBot.API.Services
             await context.Bookings.AddAsync(booking);
             await context.SaveChangesAsync();
 
-            var doctor = await context.Doctors.Where(x => x.Id == booking.DoctorId).FirstOrDefaultAsync();
+            var doctor = await context.Doctors.Where(x => x.Id == booking.DoctorId).Include(x => x.Speciality).FirstOrDefaultAsync();
             var timeSlot = await context.TimeSlots.Where(x => x.Id == booking.TimeSlotId).FirstOrDefaultAsync();
 
             var emailDto = new EmailDto
@@ -115,6 +127,7 @@ namespace MediBot.API.Services
                 Name = patient.Name,
                 ToEmail = patient.Email,
                 DoctorName = doctor.Name,
+                Speciality = doctor.Speciality.SpecialityName,
                 Date = booking.DateTime.ToString("yyyy/MM/dd"),
                 Time = timeSlot.Time.ToString(),
                 RoomId = timeSlot.RoomId.ToString()
@@ -152,9 +165,9 @@ namespace MediBot.API.Services
                     new To { Email = emailDto.ToEmail, Name =  emailDto.Name}
                 },
                 Subject = "MediBot Booking",
-                HtmlContent = "<html><head></head><body><p>Hi "+emailDto.Name+ "</p>Booking has been confirmed. Please make your payment using the Reference Number.</br> </br>" +
+                HtmlContent = "<html><head></head><body><p>Hi " + emailDto.Name + "</p>Booking has been confirmed. Please make your payment using the Reference Number.</br> </br>" +
                 "Reference Number - " + generator.Next(0, 1000000).ToString("D6") + " </br> " +
-                "Doctor Name - " +emailDto.DoctorName+" </br> " +
+                "Doctor Name - " + emailDto.DoctorName + " ("+ emailDto.Speciality + ")" + " </br> " +
                 "Customer Name - " + emailDto.Name + " </br>" +
                 "Customer Email - " + emailDto.ToEmail + " </br>" +
                 "Appoinment Date - " + emailDto.Date + " " + emailDto.Time + " </br>" +
