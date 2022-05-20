@@ -3,17 +3,26 @@ using MediBot.API.Data;
 using MediBot.API.Dtos;
 using MediBot.API.Enums;
 using MediBot.API.Interfaces;
+using MediBot.API.Models;
+using MediBot.API.Settings;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using System.Text;
+using System.Text.Json;
 
 namespace MediBot.API.Services
 {
     public class IntentDataService : IIntentDataService
     {
         private readonly AppDBContext context;
+        private readonly IHttpClientFactory httpClientFactory;
+        private readonly IOptions<EmailSettings> emailSettings;
 
-        public IntentDataService(AppDBContext context)
+        public IntentDataService(AppDBContext context, IHttpClientFactory httpClientFactory, IOptions<EmailSettings> emailSettings)
         {
             this.context = context;
+            this.httpClientFactory = httpClientFactory;
+            this.emailSettings = emailSettings;
         }
 
         public async Task<List<Doctor>> GetDoctors(APITypeEnum apiType, string intentName)
@@ -75,7 +84,7 @@ namespace MediBot.API.Services
                 (
                 x => x.TimeSlotId == bookingDto.TimeSlotId && 
                 x.DoctorId == bookingDto.DoctorId &&
-                x.DateTime.Date == DateTime.Today.Date)
+                x.DateTime.Date == bookingDto.DateTime.Date)
                 .FirstOrDefaultAsync();
 
             if(isTimeSlotAvailable != null)
@@ -83,7 +92,7 @@ namespace MediBot.API.Services
                 return new BookingResponseDto
                 {
                     Status = false,
-                    Message = "This time slot already taken"
+                    Message = "This time slot is already taken, please try a different Date or Time Slot"
                 };
             }
 
@@ -98,11 +107,67 @@ namespace MediBot.API.Services
             await context.Bookings.AddAsync(booking);
             await context.SaveChangesAsync();
 
+            var doctor = await context.Doctors.Where(x => x.Id == booking.DoctorId).FirstOrDefaultAsync();
+            var timeSlot = await context.TimeSlots.Where(x => x.Id == booking.TimeSlotId).FirstOrDefaultAsync();
+
+            var emailDto = new EmailDto
+            {
+                Name = patient.Name,
+                ToEmail = patient.Email,
+                DoctorName = doctor.Name,
+                Date = booking.DateTime.ToString("yyyy/MM/dd"),
+                Time = timeSlot.Time.ToString(),
+                RoomId = timeSlot.RoomId.ToString()
+            };
+
+            await SendBookingEmail(emailDto);
+
             return new BookingResponseDto
             {
                 Status = true,
-                Message =  "Booking Confirmed"
+                Message = "Your channeling is completed. You will receive a confirmation email shortly."
             };
+        }
+
+        private async Task SendBookingEmail(EmailDto emailDto)
+        {
+            var httpClient = httpClientFactory.CreateClient();
+
+            var url = "https://api.sendinblue.com/v3/smtp/email";
+            var key = emailSettings.Value.Key;
+
+            httpClient.DefaultRequestHeaders.Add("api-key", key);
+
+            Random generator = new Random();
+
+            var body = new EmailBody
+            {
+                Sender = new Sender
+                {
+                    Name = "MediBot Booking Agent",
+                    Email = "dlbnprabath@gmail.com"
+                },
+                To = new List<To>
+                {
+                    new To { Email = emailDto.ToEmail, Name =  emailDto.Name}
+                },
+                Subject = "MediBot Booking",
+                HtmlContent = "<html><head></head><body><p>Hi "+emailDto.Name+ "</p>Booking has been confirmed. Please make your payment using the Reference Number.</br> </br>" +
+                "Reference Number - " + generator.Next(0, 1000000).ToString("D6") + " </br> " +
+                "Doctor Name - " +emailDto.DoctorName+" </br> " +
+                "Customer Name - " + emailDto.Name + " </br>" +
+                "Customer Email - " + emailDto.ToEmail + " </br>" +
+                "Appoinment Date - " + emailDto.Date + " " + emailDto.Time + " </br>" +
+                "Room No - " + emailDto.RoomId + " </br>" +
+                "Total Fee - 3250 LKR </br>" +
+                "</p></body></html></p>"
+            };
+
+            var content = JsonSerializer.Serialize(body);
+            var response = await httpClient.PostAsync(url, new StringContent(content, Encoding.UTF8, "application/json"));
+            var stringContent = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<EmailResponse>(stringContent);
+            var Id = result.MessageId;
         }
     }
 }

@@ -11,6 +11,8 @@ namespace MediBot.API
     {
         public static IServiceCollection InjectServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddHttpClient();
+
             services.AddControllers().AddJsonOptions(x =>
                 x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
@@ -18,6 +20,7 @@ namespace MediBot.API
 
             //AppSettings
             services.Configure<DialogFlowSettings>(configuration.GetSection("DialogFlow"));
+            services.Configure<EmailSettings>(configuration.GetSection("Email"));
 
             //Services
             services.AddScoped<IDialogFlowWebService, DialogFlowWebService>();
