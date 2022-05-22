@@ -10,6 +10,8 @@ import { ApiType } from "./enums/api-types";
 import { timeSlot } from "./constants/time-slots";
 import { DateFormat, formatDateTime, isValidDate } from "./utils/date-util";
 import { isValidmail } from "./utils/validators";
+import { getRandomInt } from "./utils/util";
+import { greetings } from "./data/greetings";
 
 const user: User = {
   id: 1,
@@ -28,18 +30,20 @@ enum Step {
   CLIENT_AGE = 6,
   CLIENT_GENDER = 7,
   BOOKING_DATE = 8,
+  CONN_WITH_BOT = 9,
+  CONN_WITH_AGENT = 10,
+  GREETING = 11,
 };
 
 function App() {
-  const [chatWindowOpen, setChatWindowOpen] = useState(false);
+  const [chatWindowOpen, setChatWindowOpen] = useState(true);
   const [messages, setMessaage] = useState<Array<Message>>([]);
   const [doctors, setDoctors] = useState<Doctors>();
   const [specialities, setSpecialities] = useState<Specialities>();
 
   const chatIcRef = useRef<any>();
-  const closeIcRef = useRef<any>();
   const chatRef = useRef<any>();
-  const stepRef = useRef<number>();
+  const stepRef = useRef<number>(Step.GREETING);
   const currApiTypeRef = useRef<number>();
   const bookingDetailsRef = useRef<Booking>({} as Booking);
 
@@ -47,6 +51,26 @@ function App() {
   const [triggerSpecialities] = useLazySpecialitiesQuery();
   const [triggerDoctors] = useLazyDoctorsQuery();
   const [triggerBooking] = useLazyBookingQuery();
+
+  useEffect(() => {
+    const index = getRandomInt(greetings.length);
+
+    const suggestedActions: Array<Action> = [
+      {
+        type: "reply",
+        title: "Connect with our amazing chatbot.",
+        value: { type: Step.CONN_WITH_BOT }
+      },
+      {
+        type: "reply",
+        title: "Contact one of our live agents.",
+        value: { type: Step.CONN_WITH_AGENT }
+      },
+    ];
+    const m1 = { author: bot, text: greetings[index], suggestedActions };
+
+    updateThread([m1]);
+  }, []);
 
   useEffect(() => {
     if (isChatSuccess && chatData) {
@@ -60,7 +84,7 @@ function App() {
 
     if (isSuccess) {
       updateThread([{ text: data.message, author: bot }]);
-      stepRef.current = undefined;
+      stepRef.current = -1;
       bookingDetailsRef.current = {} as Booking;
     }
   }
@@ -87,6 +111,10 @@ function App() {
     let m: any = e.message.text;
 
     switch (stepRef.current) {
+      case Step.GREETING: {
+        greetingHandler(m.type);
+        break;
+      }
       case Step.SPECIALITIES: {
         const speciality = specialities?.data.find(s => s.id === m.specialityId);
         doctorsActionsHandler(speciality!.doctors, ApiType.SPECIALITIES, speciality!.specialityName);
@@ -196,6 +224,25 @@ function App() {
     updateThread([m]);
   }
 
+  const greetingHandler = (type: number) => {
+    stepRef.current = -1;
+    let m1;
+
+    if (type === Step.CONN_WITH_BOT)
+      m1 = { author: bot, text: "MediBot is ready for your service." };
+    else
+      m1 = {
+        author: bot,
+        text: "Contact one of our live agents at Dignity Health." +
+          "\n\nDignity Health - California Hospital Medical Center" +
+          "\n1401 S Grand Ave" +
+          "\nLos Angeles, CA 90015," +
+          "\nUnited States",
+      };
+
+    updateThread([m1]);
+  }
+
   const doctorsActionsHandler = (data: Array<Doctor>, apiType: number, specialityName?: string) => {
     stepRef.current = Step.DOCTORS;
     const suggestedActions: Array<Action> = [];
@@ -230,7 +277,8 @@ function App() {
 
   const updateThread = (m: Array<Message>) => {
     const messagesUpdated = [...messages, ...m];
-    setMessaage(messagesUpdated);
+    // setMessaage(messagesUpdated);
+    setMessaage((prevState) => ([...prevState, ...m]));
   }
 
   const handleIntentTypeApiCall = (apiType: number, intentName: string) => {
