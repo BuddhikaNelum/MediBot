@@ -54,15 +54,12 @@ namespace MediBot.API.Services
 
             return intent switch
             {
-                IntentTypes.DefaultWelcomeIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.NotRequired },
-                IntentTypes.CommonSymtoms => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.NotRequired },
                 IntentTypes.Booking => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.Specialities },
                 IntentTypes.Allergists => new IntentResult { IntentName= intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse= true, APIType = APITypeEnum.Doctors },
                 IntentTypes.Cardiologists => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.Doctors },
                 IntentTypes.Dermatologists => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.Doctors },
                 IntentTypes.Psychiatrists => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.Doctors },
                 IntentTypes.Ophthalmologists => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.Doctors },
-                IntentTypes.DefaultFallbackIntent => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.NotRequired },
                 _ => new IntentResult { IntentName = intent, FulFillmentText = queryResult.FulfillmentText, IsIntentResponse = true, APIType = APITypeEnum.NotRequired },
             };
         }

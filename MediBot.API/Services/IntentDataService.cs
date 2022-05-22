@@ -124,7 +124,7 @@ namespace MediBot.API.Services
 
             var emailDto = new EmailDto
             {
-                Name = patient.Name,
+                Name = bookingDto.Name,
                 ToEmail = patient.Email,
                 DoctorName = doctor.Name,
                 Speciality = doctor.Speciality.SpecialityName,
