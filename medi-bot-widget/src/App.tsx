@@ -54,6 +54,7 @@ function App() {
 
   useEffect(() => {
     const index = getRandomInt(greetings.length);
+    hideChatInput();
 
     const suggestedActions: Array<Action> = [
       {
@@ -67,7 +68,7 @@ function App() {
         value: { type: Step.CONN_WITH_AGENT }
       },
     ];
-    const m1 = { author: bot, text: greetings[index], suggestedActions };
+    const m1 = { author: bot, suggestedActions };
 
     updateThread([m1]);
   }, []);
@@ -78,6 +79,9 @@ function App() {
       handleIntentTypeApiCall(chatData.apiType, chatData.intentName);
     }
   }, [isChatSuccess, chatData]);
+
+  const hideChatInput = () => chatRef.current.newMsgComp.inputEl.parentElement.hidden = true;
+  const showChatInput = () => chatRef.current.newMsgComp.inputEl.parentElement.hidden = false;
 
   const handleBooking = async () => {
     const { data, isSuccess } = await triggerBooking(bookingDetailsRef.current, false);
@@ -195,6 +199,8 @@ function App() {
       case Step.CLIENT_AGE: {
         const m1 = { text: m.label, author: user };
         updateThread([m1]);
+
+        bookingDetailsRef.current.age = m.label;
         handleBooking();
         break;
       }
@@ -233,13 +239,10 @@ function App() {
     else
       m1 = {
         author: bot,
-        text: "Contact one of our live agents at Dignity Health." +
-          "\n\nDignity Health - California Hospital Medical Center" +
-          "\n1401 S Grand Ave" +
-          "\nLos Angeles, CA 90015," +
-          "\nUnited States",
+        text: "You can connect with our live agent via 011-1231231.",
       };
 
+    showChatInput();
     updateThread([m1]);
   }
 
