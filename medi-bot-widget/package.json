@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@progress/kendo-licensing": "^1.2.1",
+    "@progress/kendo-licensing": "^1.2.2",
     "@progress/kendo-react-buttons": "^4.13.0",
     "@progress/kendo-react-conversational-ui": "^4.13.0",
     "@progress/kendo-react-intl": "^4.13.0",
@@ -54,7 +54,8 @@
     ]
   },
   "devDependencies": {
-    "@parcel/transformer-sass": "^2.5.0",
+    "@parcel/transformer-sass": "^2.6.0",
+    "parcel": "^2.6.0",
     "process": "^0.11.10"
   }
 }
